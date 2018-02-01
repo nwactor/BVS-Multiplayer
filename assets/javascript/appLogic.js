@@ -33,16 +33,17 @@ var joined = false;
 
 // ========== Stuff ===========
 
-tryJoinGame();
+//tryJoinGame();
 
 // ========== Database Updates ===========
 
 //called on page load and whenever a value in the DB changes
 database.ref().on('value', function(snapshot) {
+    console.log(snapshot.val());
     //set local variables and visuals from the database 
     
     //if someone is connected to p1, show their data
-    if(snapshot.child('/p1Data/connection').exists()) {
+    if(snapshot.val().p1Data.occupied) {
 
     }
 
@@ -53,7 +54,10 @@ database.ref().on('value', function(snapshot) {
 $('#name-btn').on('click', function(event) {
     event.preventDefault();
 
-
+    playerName = $('#name-input').val().trim();
+    if(playerName != '') {
+       tryJoinGame(); 
+    }
 });
 
 $('.p1-choice').on('click', function() {
@@ -74,13 +78,39 @@ $('#chat-btn').on('click', function(event) {
 // ========== Game Logic ===========
 
 function tryJoinGame() {
-    //check if p1 is occupied
-    if(!database.ref('/p1Data').child('occupied')) {
+    //try to join as p1. If that fails, try to join as p2.
+    if(!tryJoinAsPlayer(1)) { tryJoinAsPlayer(2); }
+}
 
-    }
-    //if not, p1 = occupied
-    //this player = p1, locally
-    //else try same thing for p2
+function tryJoinAsPlayer(slotNumber) {
+    var success = false;
+    
+    database.ref('/p' + slotNumber + 'Data').once('value', function(snapshot) {
+        if(!snapshot.val().occupied) {
+            //add the player's data to the DB
+            database.ref('/p' + slotNumber + 'Data').set({
+                name: playerName,
+                occupied: true,
+                wins: 0,
+                losses: 0,
+            });
+            
+            //reset player slot when the player disconnects
+            database.ref('/p' + slotNumber + 'Data').onDisconnect().set({
+                name: "",
+                occupied: false,
+                wins: 0,
+                losses: 0,
+            });
+
+            playerNum = slotNumber;
+            success = true;
+        } else {
+            success = false;
+        }
+    });
+
+    return success;
 }
 
 function tryProcessGame() {
