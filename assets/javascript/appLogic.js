@@ -13,14 +13,9 @@ var database = firebase.database();
 
 // ========== Variable Declaration ===========
 
-var p1Choice;
-var p2Choice;
-//wins, losses
-var p1Stats = [0, 0];
-var p2Stats = [0, 0];
+var pChoice;
 
-var p1HasChosen = false;
-var p2HasChosen = false;
+var pHasChosen = false;
 
 var playerName;
 
@@ -49,6 +44,10 @@ database.ref().on('value', function(snapshot) {
 
 });
 
+// database.ref('p1Data/wins').on('value', function(snapshot) {
+
+// });
+
 // ========== On-Click Functions ===========
 
 $('#name-btn').on('click', function(event) {
@@ -56,14 +55,12 @@ $('#name-btn').on('click', function(event) {
 
     playerName = $('#name-input').val().trim();
     if(playerName != '') {
-       tryJoinGame(); 
+       tryJoinGame();
     }
 });
 
 $('.p1-choice').on('click', function() {
-    p1Choice = $(this).attr('alt');
-    p1HasChosen = true;
-
+    setPlayerChoice($(this).attr('alt'));
     tryProcessGame();
 });
 
@@ -77,22 +74,27 @@ $('#chat-btn').on('click', function(event) {
 
 // ========== Game Logic ===========
 
+//try to join as p1. If that fails, try to join as p2.
 function tryJoinGame() {
-    //try to join as p1. If that fails, try to join as p2.
-    if(!tryJoinAsPlayer(1)) { tryJoinAsPlayer(2); }
+    tryJoinAsPlayer(1);
+    if(!joined) { tryJoinAsPlayer(2); }
 }
 
-function tryJoinAsPlayer(slotNumber) {
-    var success = false;
-    
+//tries to enter the given player slot. If it's already occupied, fails.
+function tryJoinAsPlayer(slotNumber) {   
     database.ref('/p' + slotNumber + 'Data').once('value', function(snapshot) {
+        //check if the slot is occupied
         if(!snapshot.val().occupied) {
+            
+            joined = true;
+
             //add the player's data to the DB
             database.ref('/p' + slotNumber + 'Data').set({
                 name: playerName,
                 occupied: true,
                 wins: 0,
                 losses: 0,
+                choice: ''
             });
             
             //reset player slot when the player disconnects
@@ -101,16 +103,18 @@ function tryJoinAsPlayer(slotNumber) {
                 occupied: false,
                 wins: 0,
                 losses: 0,
+                choice: ''
             });
 
+            //set the player's number locally
             playerNum = slotNumber;
-            success = true;
-        } else {
-            success = false;
         }
     });
+}
 
-    return success;
+function setPlayerChoice(choice) {
+    pChoice = choice;
+    pHasChosen = true;
 }
 
 function tryProcessGame() {
@@ -121,6 +125,9 @@ function tryProcessGame() {
 
 //returns 0 for tie, 1 for p1, 2 for p2
 function getWinner() {
+    var p1Choice = '';
+    var p2Choice = '';
+
     if(p1Choice === p2Choice) {
         return 0;
     
@@ -146,8 +153,10 @@ function getWinner() {
 
 //update each player's stats after every round
 function updateStats() {
-  $('#player1-stats').text('Wins: ' + p1Stats[0] + ' Losses: ' + p1Stats[1]);
-  $('#player2-stats').text('Wins: ' + p2Stats[0] + ' Losses: ' + p2Stats[1]);
+    var p1Stats;
+    var p2Stats;
+    $('#player1-stats').text('Wins: ' + p1Stats[0] + ' Losses: ' + p1Stats[1]);
+    $('#player2-stats').text('Wins: ' + p2Stats[0] + ' Losses: ' + p2Stats[1]);
 }
 
 function showPlayerName() {
