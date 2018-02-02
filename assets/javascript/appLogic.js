@@ -18,9 +18,8 @@ var pChoice;
 var pHasChosen = false;
 
 var playerName;
+var playerNum;
 
-
-var thisPlayer;
 var joined = false;
 
 //have to set occupied = false when someone leaves
@@ -32,15 +31,20 @@ var joined = false;
 
 // ========== Database Updates ===========
 
-//called on page load and whenever a value in the DB changes
+//called on page load and whenever a value in the DB changes,
+//the main function that keeps the page up to date
 database.ref().on('value', function(snapshot) {
     console.log(snapshot.val());
-    //set local variables and visuals from the database 
-    
-    //if someone is connected to p1, show their data
-    if(snapshot.val().p1Data.occupied) {
+    var state = snapshot.val();
 
-    }
+    //Update Info Message
+
+
+    //Update Player Info
+    updatePlayerInfo(state.p1Data, 1);
+    updatePlayerInfo(state.p2Data, 2);
+
+    //Update Chat Log
 
 });
 
@@ -78,6 +82,10 @@ $('#chat-btn').on('click', function(event) {
 function tryJoinGame() {
     tryJoinAsPlayer(1);
     if(!joined) { tryJoinAsPlayer(2); }
+    if(joined) {
+        $('#name-display').text('Welcome ' + playerName + '. You are Player ' + playerNum + '.');
+        $('#join-display').hide();
+    }
 }
 
 //tries to enter the given player slot. If it's already occupied, fails.
@@ -151,14 +159,38 @@ function getWinner() {
 
 // ========== UI Update Functions ===========
 
+function updatePlayerInfo(playerState, num) {
+    if(playerState.occupied) {
+        //show name
+        $('#player' + num + '-name').text(playerState.name);
+        //show choice
+        if(playerState.choice === '') {
+            $('#player' + num + '-choice').hide();
+            //if the client is in this player slot, show their choices
+            if(playerNum === num) {
+                $('#player' + num + 'options').show();
+            }
+        } else {
+            //if the round has gone:
+                //show choice
+            //else
+                //show choice if playerNum === num
+        }
+        //show stats
+        updateStats(num, playerState.wins, playerState.losses);
+    }
+}
+
 //update each player's stats after every round
-function updateStats() {
-    var p1Stats;
-    var p2Stats;
-    $('#player1-stats').text('Wins: ' + p1Stats[0] + ' Losses: ' + p1Stats[1]);
-    $('#player2-stats').text('Wins: ' + p2Stats[0] + ' Losses: ' + p2Stats[1]);
+function updateStats(player, wins, losses) {
+    $('#player' + player + '-stats').text('Wins: ' + wins + ' Losses: ' + losses);
+    // $('#player2-stats').text('Wins: ' + p2Stats[0] + ' Losses: ' + p2Stats[1]);
 }
 
 function showPlayerName() {
+
+}
+
+function showChatMessage() {
 
 }
