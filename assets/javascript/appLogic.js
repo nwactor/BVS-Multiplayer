@@ -15,6 +15,7 @@ var database = firebase.database();
 
 var playerName;
 var playerNum;
+var pHasChosen = false;
 
 var joined = false;
 
@@ -24,9 +25,6 @@ var joined = false;
 //the main function that keeps the page up to date
 database.ref().on('value', function(snapshot) {
     var state = snapshot.val();
-
-    //Advance Game
-    tryProcessGame(state);
 
     //Update Info Message
 
@@ -50,15 +48,11 @@ $('#name-btn').on('click', function(event) {
     }
 });
 
-$('.p1-choice').on('click', function() {
-    setPlayerChoice($(this).attr('alt'));
+$('.p-choice').on('click', function() {
+    setPlayerChoice($(this).attr('alt'), playerNum);
+    
+    //tryProcessGame();
 });
-
-$('.p2-choice').on('click', function() {
-    setPlayerChoice($(this).attr('alt'));
-});
-
-$()
 
 $('#chat-btn').on('click', function(event) {
     event.preventDefault();
@@ -129,8 +123,11 @@ function tryJoinAsPlayer(slotNumber) {
     });
 }
 
-function setPlayerChoice(choice) {
-    pChoice = choice;
+function setPlayerChoice(choice, slotNumber) {
+    //update DB
+    if(! pHasChosen) {
+        database.ref('/p' + slotNumber + 'Data/choice').set(choice);
+    }
     pHasChosen = true;
 }
 

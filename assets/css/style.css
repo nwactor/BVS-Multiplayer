@@ -52,7 +52,7 @@ h1 {
 	display: none; 
 }
 
-.p1-choice, .p2-choice {
+.p-choice {
 	cursor: pointer;
 	height: 125px;
 	margin: 2px;
