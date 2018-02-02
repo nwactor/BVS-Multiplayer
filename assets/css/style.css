@@ -3,8 +3,8 @@ body {
 }
 
 .content-container {
-	margin: 20px 50px 20px 50px;
 	text-align: center;
+	margin: 20px 50px 20px 50px;
 }
 
 header, section {
@@ -25,8 +25,8 @@ h1 {
 
 .game-panel {
 	text-align: center;
-	width: 325px;
-	height: 275px;
+	width: 375px;
+	height: 300px;
 	padding: 10px;
 	border: 5px double red;
 	border-radius: 3px;
@@ -46,6 +46,16 @@ h1 {
 
 .block { /*helper class*/
 	display: block;
+}
+
+#player1-options, #player2-options {
+	display: none; 
+}
+
+.p1-choice, .p2-choice {
+	cursor: pointer;
+	height: 125px;
+	margin: 2px;
 }
 
 #chat-section {

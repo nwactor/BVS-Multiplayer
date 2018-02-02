@@ -13,29 +13,20 @@ var database = firebase.database();
 
 // ========== Variable Declaration ===========
 
-var pChoice;
-
-var pHasChosen = false;
-
 var playerName;
 var playerNum;
 
 var joined = false;
-
-//have to set occupied = false when someone leaves
-//push the value to of the person to p1Data, which gets deleted when they leave?
-
-// ========== Stuff ===========
-
-//tryJoinGame();
 
 // ========== Database Updates ===========
 
 //called on page load and whenever a value in the DB changes,
 //the main function that keeps the page up to date
 database.ref().on('value', function(snapshot) {
-    console.log(snapshot.val());
     var state = snapshot.val();
+
+    //Advance Game
+    tryProcessGame(state);
 
     //Update Info Message
 
@@ -47,10 +38,6 @@ database.ref().on('value', function(snapshot) {
     //Update Chat Log
 
 });
-
-// database.ref('p1Data/wins').on('value', function(snapshot) {
-
-// });
 
 // ========== On-Click Functions ===========
 
@@ -65,7 +52,10 @@ $('#name-btn').on('click', function(event) {
 
 $('.p1-choice').on('click', function() {
     setPlayerChoice($(this).attr('alt'));
-    tryProcessGame();
+});
+
+$('.p2-choice').on('click', function() {
+    setPlayerChoice($(this).attr('alt'));
 });
 
 $()
@@ -77,6 +67,24 @@ $('#chat-btn').on('click', function(event) {
 });
 
 // ========== Game Logic ===========
+
+function tryProcessGame(state) {
+    var p1Choice = state.p1Data.choice;
+    var p2Choice = state.p2Data.choice
+    
+    //if both players have moved
+    if(p1Choice != '' && p2Choice != '') {
+        var gameResult = getWinner(p1Choice, p2Choice);
+        if(gameResult === 1) {
+            //if I try to set data here it will be an infinite loop...
+        } else if(gameResult === 2) {
+
+        } else {
+
+        }
+    }
+    
+}
 
 //try to join as p1. If that fails, try to join as p2.
 function tryJoinGame() {
@@ -95,6 +103,10 @@ function tryJoinAsPlayer(slotNumber) {
         if(!snapshot.val().occupied) {
             
             joined = true;
+            //player's number must be set locally
+            //before the DB's values are set because
+            //that updates the UI, which the local number is needed for.
+            playerNum = slotNumber;
 
             //add the player's data to the DB
             database.ref('/p' + slotNumber + 'Data').set({
@@ -113,9 +125,6 @@ function tryJoinAsPlayer(slotNumber) {
                 losses: 0,
                 choice: ''
             });
-
-            //set the player's number locally
-            playerNum = slotNumber;
         }
     });
 }
@@ -123,12 +132,6 @@ function tryJoinAsPlayer(slotNumber) {
 function setPlayerChoice(choice) {
     pChoice = choice;
     pHasChosen = true;
-}
-
-function tryProcessGame() {
-    if (p1HasChosen && p2HasChosen) {
-        var winner = getWinner();
-    }
 }
 
 //returns 0 for tie, 1 for p1, 2 for p2
@@ -158,6 +161,10 @@ function getWinner() {
 
 
 // ========== UI Update Functions ===========
+
+function updateGameInfo(state) {
+
+}
 
 function updatePlayerInfo(playerState, num) {
     if(playerState.occupied) {
