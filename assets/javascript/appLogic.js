@@ -168,7 +168,7 @@ function updatePlayerInfo(playerState, num) {
             $('#player' + num + '-choice').hide();
             //if the client is in this player slot, show their choices
             if(playerNum === num) {
-                $('#player' + num + 'options').show();
+                $('#player' + num + '-options').show();
             }
         } else {
             //if the round has gone:
@@ -176,19 +176,23 @@ function updatePlayerInfo(playerState, num) {
             //else
                 //show choice if playerNum === num
         }
-        //show stats
-        updateStats(num, playerState.wins, playerState.losses);
+    
+    } else {
+        //reset name to default
+        $('#player' + num + '-name').text('Waiting for Player ' + num);
+        //hide player choice
+        $('#player' + num + '-choice').hide();
+        $('#player' + num + '-options').hide();
     }
+    
+    //show stats (will be 0 if slot is unoccupied)
+    updateStats(num, playerState.wins, playerState.losses);
 }
 
 //update each player's stats after every round
 function updateStats(player, wins, losses) {
     $('#player' + player + '-stats').text('Wins: ' + wins + ' Losses: ' + losses);
     // $('#player2-stats').text('Wins: ' + p2Stats[0] + ' Losses: ' + p2Stats[1]);
-}
-
-function showPlayerName() {
-
 }
 
 function showChatMessage() {

@@ -26,36 +26,40 @@
 		</div>
 	</section>
 
-	<section id="play-section">
-		<div class="game-panel">
-			<span id="player1-name"></span>
-			<div id="player1-options">
+	<section id="play-section" class="clearfix">
+		<div id="p1-panel" class="game-panel">
+			<span id="player1-name" class="block"></span>
+			<div id="player1-options" class="block">
 				<img class="p1-choice" src="#" alt="Batman">
 				<img class="p1-choice" src="#" alt="Superman">
 				<img class="p1-choice" src="#" alt="Velociraptors">
 			</div>
-			<img id="player1-choice">
+			<img id="player1-choice" class="block">
 			<span id="player1-stats"></span>
-		</div>
-		<div class="game-panel">
-			<strong><p id="game-result"></p></strong>
-		</div>
-		<div class="game-panel">
-			<span id="player2-name"></span>
-			<div id="player2-options">
+		</div>		
+		<div id="p2-panel" class="game-panel">
+			<span id="player2-name" class="block"></span>
+			<div id="player2-options" class="block">
 				<img class="p2-choice" src="#" alt="Batman">
 				<img class="p2-choice" src="#" alt="Superman">
 				<img class="p2-choice" src="#" alt="Velociraptors">
 			</div>
-			<img id="player2-choice">
-			<span id="player2-stats"></span>
+			<img id="player2-choice" class="block">
+			<span id="player2-stats" class="block"></span>
+		</div>
+		<!-- Mid Panel must be last because it doesn't float -->
+		<div id="mid-panel" class="game-panel">
+			<strong><p id="game-result"></p></strong>
 		</div>
 	</section>
 
 	<section id="chat-section">
-		<div id="chat-log"></div>
-		<input id="chat-input" type="text">
-		<button id="chat-btn">Send</button>
+		<div id="log-wrapper">
+			<span>Chat Log</span>
+			<div id="chat-log"></div>
+			<input id="chat-input" type="text">
+			<button id="chat-btn">Send</button>
+		</div>
 	</section>
 
 </div>

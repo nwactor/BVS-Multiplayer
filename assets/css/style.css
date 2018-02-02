@@ -1,0 +1,74 @@
+body {
+	background-color: #ffffb7;
+}
+
+.content-container {
+	margin: 20px 50px 20px 50px;
+	text-align: center;
+}
+
+header, section {
+	margin-bottom: 20px;
+}
+
+h1 {
+
+}
+
+#instruction-section {
+
+}
+
+#play-section {
+
+}
+
+.game-panel {
+	text-align: center;
+	width: 325px;
+	height: 275px;
+	padding: 10px;
+	border: 5px double red;
+	border-radius: 3px;
+}
+
+#p1-panel {
+	float: left;
+}
+
+#mid-panel {
+	margin: auto;
+}
+
+#p2-panel {
+	float: right;
+}
+
+.block { /*helper class*/
+	display: block;
+}
+
+#chat-section {
+	margin-top: 30px;
+}
+
+#log-wrapper {
+	text-align: left;
+	display: inline-block;
+}
+
+#chat-log {
+	/*text-align: left;*/
+	background-color: white;
+	width: 600px;
+	height: 200px;
+	padding: 5px;
+	border: 1px solid gray;
+	margin: 5px auto 10px auto;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
