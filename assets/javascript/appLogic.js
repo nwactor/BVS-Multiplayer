@@ -235,21 +235,9 @@ function updatePlayerInfo(state, num) {
 
             var imgPath = './assets/images/';
             
-            //show choice for either player if the round is over
-            if(state.p1Data.choice != '' && state.p2Data.choice != '') {
-                $('#player1-choice').attr('src', (imgPath + state.p1Data.choice.toLowerCase() + '.jpg'));
-                $('#player1-choice').attr('alt', state.p1Data.choice);
-                $('#player1-options').hide();
-                $('#player1-choice').show();
-
-                $('#player2-choice').attr('src', (imgPath + state.p2Data.choice.toLowerCase() + '.jpg'));
-                $('#player2-choice').attr('alt', state.p2Data.choice);
-                $('#player2-options').hide();
-                $('#player2-choice').show();
-            }
-            
             //show the choice if playerNum === num
-            else if(playerNum === num){
+            //or show choice for either player if the round is over
+            if(playerNum === num || (state.p1Data.choice != '' && state.p2Data.choice != '')){
                 $('#player' + num + '-choice').attr('src', (imgPath + playerState.choice.toLowerCase() + '.jpg'));
                 $('#player' + num + '-choice').attr('alt', playerState.choice);
                 $('#player' + num + '-options').hide();
