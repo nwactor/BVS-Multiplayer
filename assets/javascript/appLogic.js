@@ -13,6 +13,9 @@ var database = firebase.database();
 
 // ========== Variable Declaration ===========
 
+var roundActive = true;
+var currentWinner = 0;
+
 var playerName;
 var playerNum;
 var pHasChosen = false;
@@ -25,6 +28,11 @@ var joined = false;
 //the main function that keeps the page up to date
 database.ref().on('value', function(snapshot) {
     var state = snapshot.val();
+
+    //Update Game Info
+    roundActive = state.roundData.roundActive;
+    currentWinner = state.roundData.currentWinner;
+    if(!roundActive) { showEndRoundMessage(currentWinner); }
 
     //Update Info Message
 
@@ -53,6 +61,12 @@ $('.p-choice').on('click', function() {
         setPlayerChoice($(this).attr('alt'), playerNum);
         tryProcessGame();
     }
+});
+
+$('#restart-btn').on('click', function(event) {
+    pHasChosen = false;
+    $('#restart-btn').hide();
+    $('#result-banner').hide();
 });
 
 $('#chat-btn').on('click', function(event) {
@@ -88,7 +102,7 @@ function tryProcessGame() {
     //if both players have moved
     if(p1Choice != '' && p2Choice != '') {
         var winner = getWinner(p1Choice, p2Choice);
-
+        
         if(winner != 0) { //not a tie
             var loser;
             if(winner === 1) { loser = 2; } 
@@ -96,11 +110,11 @@ function tryProcessGame() {
             //update database with scores
             var updatedWins = ++(fullStats[winner][0]);
             var updatedLosses = ++(fullStats[loser][1]);
-            console.log(updatedWins);
+
             database.ref('/p' + winner + 'Data/wins').set(updatedWins);
             database.ref('/p' + loser + 'Data/losses').set(updatedLosses);
         }
-        startNewRound();
+        finishRound(winner);
     }
     //otherwise still waiting, do nothing
 }
@@ -176,36 +190,40 @@ function getWinner(p1Choice, p2Choice) {
     }
 }
 
-function startNewRound() {
-
+function finishRound(winner) {
+    database.ref('/roundData/currentWinner').set(winner);
+    database.ref('/roundData/roundActive').set(false);
+    database.ref('/p1Data/choice').set('');
+    database.ref('/p2Data/choice').set('');
 }
 
 // ========== UI Update Functions ===========
-
-function updateGameInfo(state) {
-
-}
 
 function updatePlayerInfo(state, num) {
     var playerState;
     if(num === 1) { playerState = state.p1Data; }
     else { playerState = state.p2Data; }
 
+    // $('#p1-visible-message').hide();
+    // $('#p2-visible-message').hide();
+
     if(playerState.occupied) {
         //show name
         $('#player' + num + '-name').text(playerState.name);
         
-        //show choice
-        if(playerState.choice === '') {
+        //show choices if player has not yet made a decision
+        if(playerState.choice === '' && state.roundData.roundActive) {
             $('#player' + num + '-choice').hide();
             //if the client is in this player slot, show their choices
             if(playerNum === num) {
                 $('#player' + num + '-options').show();
             }
 
+        //show the appropriate thing when this player's decision has been made
         } else {
-            // debugger;
+
             var imgPath = './assets/images/';
+            
             //show choice for either player if the round is over
             if(state.p1Data.choice != '' && state.p2Data.choice != '') {
                 $('#player1-choice').attr('src', (imgPath + state.p1Data.choice.toLowerCase() + '.jpg'));
@@ -213,20 +231,25 @@ function updatePlayerInfo(state, num) {
                 $('#player1-options').hide();
                 $('#player1-choice').show();
 
-
                 $('#player2-choice').attr('src', (imgPath + state.p2Data.choice.toLowerCase() + '.jpg'));
                 $('#player2-choice').attr('alt', state.p2Data.choice);
                 $('#player2-options').hide();
                 $('#player2-choice').show();
             }
             
-            //show choice if playerNum === num
+            //show the choice if playerNum === num
             else if(playerNum === num){
                 $('#player' + num + '-choice').attr('src', (imgPath + playerState.choice.toLowerCase() + '.jpg'));
                 $('#player' + num + '-choice').attr('alt', playerState.choice);
                 $('#player' + num + '-options').hide();
                 $('#player' + num + '-choice').show();
-            }          
+            } 
+
+            //show the notification that the opposite player has made a decision
+            // else {
+            //     if(playerNum === 1) { $('#p2-visible-message').show(); }
+            //     else { $('#p1-visible-message').show(); }
+            // }        
         }
     
     } else {
@@ -244,7 +267,19 @@ function updatePlayerInfo(state, num) {
 //update each player's stats after every round
 function updateStats(player, wins, losses) {
     $('#player' + player + '-stats').text('Wins: ' + wins + ' Losses: ' + losses);
-    // $('#player2-stats').text('Wins: ' + p2Stats[0] + ' Losses: ' + p2Stats[1]);
+}
+
+function showEndRoundMessage(winner) {
+    var endRoundMessage;
+    if(winner === 0) { endRoundMessage = "It's a tie!"; }
+    else { endRoundMessage = 'Winner is Player ' + winner + '!'; }
+    $('#result-banner').text(endRoundMessage);
+    $('#result-banner').show();
+    if(joined) {
+        $('#restart-btn').show();
+    }
+    database.ref('/roundData/roundActive').set(true);
+    database.ref('/roundData/currentWinner').set(0);
 }
 
 function showChatMessage() {
