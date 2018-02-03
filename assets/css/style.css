@@ -59,6 +59,10 @@ h1 {
 	display: none;
 }
 
+#player1-name, #player2-name {
+	font-size: 30px;
+}
+
 .p-choice {
 	cursor: pointer;
 	height: 125px;
@@ -74,7 +78,7 @@ h1 {
 }
 
 #p1-visible-message, #p2-visible-message {
-	font-size: 30px;
+	font-size: 50px;
 }
 
 #player1-stats, #player2-stats {
@@ -84,7 +88,7 @@ h1 {
 }
 
 #result-banner {
-	font-size: 30px;
+	font-size: 50px;
 }
 
 #chat-section {
@@ -98,6 +102,7 @@ h1 {
 
 #chat-log {
 	/*text-align: left;*/
+	overflow-y: scroll;
 	background-color: white;
 	width: 600px;
 	height: 175px;

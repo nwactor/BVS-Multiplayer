@@ -13,13 +13,15 @@ var database = firebase.database();
 
 // ========== Variable Declaration ===========
 
-
+var roundActive;
 
 var playerName;
 var playerNum;
 var pHasChosen = false;
 
 var joined = false;
+
+var chatCache = [];
 
 // ========== Database Updates ===========
 
@@ -30,7 +32,7 @@ database.ref().on('value', function(snapshot) {
 
     //Update Game Info
     roundActive = state.roundData.roundActive;
-    currentWinner = state.roundData.currentWinner;
+    var currentWinner = state.roundData.currentWinner;
     if(!roundActive) { showEndRoundMessage(currentWinner); }
 
     //Update Info Message
@@ -41,7 +43,7 @@ database.ref().on('value', function(snapshot) {
     updatePlayerInfo(state, 2);
 
     //Update Chat Log
-
+    updateChatLog(state.chatLog);
 });
 
 // ========== On-Click Functions ===========
@@ -66,17 +68,27 @@ $('#restart-btn').on('click', function(event) {
     pHasChosen = false;
     $('#restart-btn').hide();
     $('#result-banner').hide();
+
+    database.ref('/roundData/roundActive').set(true);
+    database.ref('/roundData/currentWinner').set(0);
 });
 
 $('#chat-btn').on('click', function(event) {
     event.preventDefault();
 
-  
+    if(playerName != undefined) {
+        var message = $('#chat-input').val().trim();
+        if(message != ('')) {
+            database.ref('/chatLog').push(playerName + ': ' + message);
+        }
+    }
 });
 
 // ========== Game Logic ===========
 
 function tryProcessGame() {
+    if(!roundActive) {return;}
+
     //A hacky way (due to time constraint) to get all the necessary data from the
     //database in a format that can be used to set wins/losses in the DB easily
     var p1Choice;
@@ -268,6 +280,22 @@ function updateStats(player, wins, losses) {
     $('#player' + player + '-stats').text('Wins: ' + wins + ' Losses: ' + losses);
 }
 
+function updateChatLog(chatLog) {
+    for(var message in chatLog) {
+        if(chatLog.hasOwnProperty(message)) {
+            if(message != 'dummy' && !chatCache.includes(chatLog[message])) {
+                var messageDisplay = $('<p>');
+                messageDisplay.text(chatLog[message]);
+                $('#chat-log').append(messageDisplay);
+
+                //stop the same message from appearing more than once...
+                //not a good solution, but better than nothing
+                chatCache.push(chatLog[message]);
+            }
+        }
+    }
+}
+
 function showEndRoundMessage(winner) {
     var endRoundMessage;
     if(winner === 0) { endRoundMessage = "It's a tie!"; }
@@ -277,10 +305,4 @@ function showEndRoundMessage(winner) {
     if(joined) {
         $('#restart-btn').show();
     }
-    database.ref('/roundData/roundActive').set(true);
-    database.ref('/roundData/currentWinner').set(0);
-}
-
-function showChatMessage() {
-
 }
