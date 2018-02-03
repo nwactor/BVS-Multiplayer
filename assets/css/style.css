@@ -58,6 +58,14 @@ h1 {
 	margin: 2px;
 }
 
+#player1-choice, #player2-choice {
+	height: 250px;
+	max-width: 350px;
+	margin: auto;
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
 #chat-section {
 	margin-top: 30px;
 }
@@ -71,7 +79,7 @@ h1 {
 	/*text-align: left;*/
 	background-color: white;
 	width: 600px;
-	height: 200px;
+	height: 175px;
 	padding: 5px;
 	border: 1px solid gray;
 	margin: 5px auto 10px auto;

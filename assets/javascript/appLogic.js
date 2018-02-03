@@ -30,8 +30,8 @@ database.ref().on('value', function(snapshot) {
 
 
     //Update Player Info
-    updatePlayerInfo(state.p1Data, 1);
-    updatePlayerInfo(state.p2Data, 2);
+    updatePlayerInfo(state, 1);
+    updatePlayerInfo(state, 2);
 
     //Update Chat Log
 
@@ -49,9 +49,10 @@ $('#name-btn').on('click', function(event) {
 });
 
 $('.p-choice').on('click', function() {
-    setPlayerChoice($(this).attr('alt'), playerNum);
-    
-    //tryProcessGame();
+    if(! pHasChosen) {
+        setPlayerChoice($(this).attr('alt'), playerNum);
+        tryProcessGame();
+    }
 });
 
 $('#chat-btn').on('click', function(event) {
@@ -62,22 +63,46 @@ $('#chat-btn').on('click', function(event) {
 
 // ========== Game Logic ===========
 
-function tryProcessGame(state) {
-    var p1Choice = state.p1Data.choice;
-    var p2Choice = state.p2Data.choice
+function tryProcessGame() {
+    //A hacky way (due to time constraint) to get all the necessary data from the
+    //database in a format that can be used to set wins/losses in the DB easily
+    var p1Choice;
+    var p1Stats = [];
     
+    var p2Choice;
+    var p2Stats = [];
+
+    var fullStats = [null, p1Stats, p2Stats];
+
+    database.ref().once('value', function(snapshot) {
+        p1Choice = snapshot.val().p1Data.choice;
+        p1Stats[0] = snapshot.val().p1Data.wins;
+        p1Stats[1] = snapshot.val().p1Data.losses;
+        
+        p2Choice = snapshot.val().p2Data.choice;
+        p2Stats[0] = snapshot.val().p2Data.wins;
+        p2Stats[1] = snapshot.val().p2Data.losses;
+    });
+    
+
     //if both players have moved
     if(p1Choice != '' && p2Choice != '') {
-        var gameResult = getWinner(p1Choice, p2Choice);
-        if(gameResult === 1) {
-            //if I try to set data here it will be an infinite loop...
-        } else if(gameResult === 2) {
+        var winner = getWinner(p1Choice, p2Choice);
 
-        } else {
-
+        if(winner != 0) { //not a tie
+            var loser;
+            if(winner === 1) { loser = 2; } 
+            else { loser = 1; }
+            //update database with scores
+            var updatedWins = ++(fullStats[winner][0]);
+            var updatedLosses = ++(fullStats[loser][1]);
+            console.log(updatedWins);
+            database.ref('/p' + winner + 'Data/wins').set(updatedWins);
+            database.ref('/p' + loser + 'Data/losses').set(updatedLosses);
         }
+        startNewRound();
     }
-    
+    //otherwise still waiting, do nothing
 }
 
 //try to join as p1. If that fails, try to join as p2.
@@ -125,17 +150,12 @@ function tryJoinAsPlayer(slotNumber) {
 
 function setPlayerChoice(choice, slotNumber) {
     //update DB
-    if(! pHasChosen) {
-        database.ref('/p' + slotNumber + 'Data/choice').set(choice);
-    }
+    database.ref('/p' + slotNumber + 'Data/choice').set(choice);
     pHasChosen = true;
 }
 
 //returns 0 for tie, 1 for p1, 2 for p2
-function getWinner() {
-    var p1Choice = '';
-    var p2Choice = '';
-
+function getWinner(p1Choice, p2Choice) {
     if(p1Choice === p2Choice) {
         return 0;
     
@@ -144,18 +164,21 @@ function getWinner() {
         else if(p2Choice === 'Velociraptors') { return 2; }
     
     } else if(p1Choice === 'Superman') {
-        if(p2Choice === 'Superman') { return 1; }
-        else if(p2Choice === 'Velociraptors') { return 2; }
+        if(p2Choice === 'Batman') { return 2; }
+        else if(p2Choice === 'Velociraptors') { return 1; }
     
     } else if(p1Choice === 'Velociraptors') {
-        if(p2Choice === 'Superman') { return 1; }
-        else if(p2Choice === 'Velociraptors') { return 2; }
+        if(p2Choice === 'Superman') { return 2; }
+        else if(p2Choice === 'Batman') { return 1; }
     
     } else {
         //throw error
     }
 }
 
+function startNewRound() {
+
+}
 
 // ========== UI Update Functions ===========
 
@@ -163,10 +186,15 @@ function updateGameInfo(state) {
 
 }
 
-function updatePlayerInfo(playerState, num) {
+function updatePlayerInfo(state, num) {
+    var playerState;
+    if(num === 1) { playerState = state.p1Data; }
+    else { playerState = state.p2Data; }
+
     if(playerState.occupied) {
         //show name
         $('#player' + num + '-name').text(playerState.name);
+        
         //show choice
         if(playerState.choice === '') {
             $('#player' + num + '-choice').hide();
@@ -174,11 +202,31 @@ function updatePlayerInfo(playerState, num) {
             if(playerNum === num) {
                 $('#player' + num + '-options').show();
             }
+
         } else {
-            //if the round has gone:
-                //show choice
-            //else
-                //show choice if playerNum === num
+            // debugger;
+            var imgPath = './assets/images/';
+            //show choice for either player if the round is over
+            if(state.p1Data.choice != '' && state.p2Data.choice != '') {
+                $('#player1-choice').attr('src', (imgPath + state.p1Data.choice.toLowerCase() + '.jpg'));
+                $('#player1-choice').attr('alt', state.p1Data.choice);
+                $('#player1-options').hide();
+                $('#player1-choice').show();
+
+
+                $('#player2-choice').attr('src', (imgPath + state.p2Data.choice.toLowerCase() + '.jpg'));
+                $('#player2-choice').attr('alt', state.p2Data.choice);
+                $('#player2-options').hide();
+                $('#player2-choice').show();
+            }
+            
+            //show choice if playerNum === num
+            else if(playerNum === num){
+                $('#player' + num + '-choice').attr('src', (imgPath + playerState.choice.toLowerCase() + '.jpg'));
+                $('#player' + num + '-choice').attr('alt', playerState.choice);
+                $('#player' + num + '-options').hide();
+                $('#player' + num + '-choice').show();
+            }          
         }
     
     } else {
