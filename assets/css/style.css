@@ -30,6 +30,7 @@ h1 {
 }
 
 .game-panel {
+	position: relative;
 	text-align: center;
 	width: 375px;
 	height: 300px;
@@ -74,6 +75,12 @@ h1 {
 
 #p1-visible-message, #p2-visible-message {
 	font-size: 30px;
+}
+
+#player1-stats, #player2-stats {
+	position: absolute;
+	bottom: 5px;
+	left: 35%;
 }
 
 #result-banner {

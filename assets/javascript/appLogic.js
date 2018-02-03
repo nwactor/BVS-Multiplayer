@@ -13,8 +13,7 @@ var database = firebase.database();
 
 // ========== Variable Declaration ===========
 
-var roundActive = true;
-var currentWinner = 0;
+
 
 var playerName;
 var playerNum;
